@@ -1,0 +1,23 @@
+diff --git a/osfmk/arm64/sleh.c b/osfmk/arm64/sleh.c
+index 0554aa8..7bfbacf 100644
+--- a/osfmk/arm64/sleh.c
++++ b/osfmk/arm64/sleh.c
+@@ -2914,6 +2914,18 @@ handle_pac_fail(arm_saved_state_t *state, uint64_t esr)
+ 			char reg[4];
+ 			bxrax_instruction_extract_reg(instr, reg);
+ 			snprintf(msg, sizeof(msg), BXRAX_MSG_FMT, key_str, reg);
++			{
++				uint64_t pac_obj  = state->x[21];
++				uint64_t pac_vt   = 0;
++				uint64_t pac_slot = 0;
++				if (pac_obj != 0) {
++					pac_vt = *(volatile uint64_t *)(uintptr_t)pac_obj;
++					if ((pac_vt >> 48) == 0xffff) {
++						pac_slot = *(volatile uint64_t *)(uintptr_t)(pac_vt + 0xD8);
++					}
++				}
++				printf("PACDBG x21=%lx vt=%lx slotD8=%lx\n", pac_obj, pac_vt, pac_slot);
++			}
+ 		} else if (ARM64_INSTR_IS_RETAx(instr)) {
+ 			snprintf(msg, sizeof(msg), RETAX_MSG_FMT, key_str);
+ 		} else {
